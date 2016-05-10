@@ -1,35 +1,63 @@
 #!/bin/sh
+# run this on the eidson
+# screen /dev/tty.usbserial-XXXX 115200
+set -e
 
-clean() {
-  apt-get autoclean;
-  apt-get clean;
-  apt-get autoremove;
-}
+if [[ $EUID -ne 0 ]]; then
+  echo "You must be a root user root:edison" 2>&1
+  exit 1
+fi
 
 # configure wifi here...
 
+# to connect wifi get the has by running
+# wpa_passphrase Bocoup PASS_WORD
+echo 'auto lo
+iface lo inet loopback
+
+Set to auto so we can share our net connection with it
+auto usb0
+iface usb0 inet dhcp
+
+auto wlan0
+iface wlan0 inet dhcp
+    wpa-ssid Bocoup
+    wpa-psk 63e16c935395e9eea854685d92f3dc5bc73b16174f392475344eeee2d1d5fd57
+
+# And the following 4 lines are for when using hostapd...
+#auto wlan0
+#iface wlan0 inet static
+#    address 192.168.42.1
+#    netmask 255.255.255.0
+' > /etc/network/interfaces
+
+ifdown usb0
+ifup usb0
+ifdown wlan0
+ifup wlan0
 
 # then...
 
-echo "LANG=en_US.UTF-8" > /etc/default/locale;
+# setup locals
+# echo -e 'LANG="en_US.UTF-8"\nLANGUAGE="en_US:en"\n' > /etc/default/locale;
+# locale-gen --purge en_US.UTF-8;
 
-apt-get update;
-sudo apt-get upgrade;
-apt-get install -y sudo;
+# setup nodejs sources
+curl -sL https://deb.nodesource.com/setup_6.x | bash -;
 
-clean;
+# packages to install
+# apt-get update # done automatically by nodesource
+apt-get upgrade -y;
+apt-get install -y sudo libjpeg-dev libv4l-dev nodejs;
 
-# apt-get install -y make
-# sudo locale-gen en_US.UTF-8;
-# sudo dpkg-reconfigure locales;
+# remove packages not needed anymore and then all downloaded .deb files
+apt-get autoremove -y;
+apt-get clean -y;
 
 wget http://terzo.acmesystems.it/download/webcam/mjpg-streamer.tar.gz;
 tar -xvzf mjpg-streamer.tar.gz;
 cd mjpg-streamer;
-apt-get install -y libjpeg-dev;
-apt-get install -y libv4l-dev;
 ln -s /usr/include/libv4l1-videodev.h /usr/include/linux/videodev.h;
-
 
 # Comment the following line in the Makefile:
 # PLUGINS += input_gspcav1.so
@@ -38,20 +66,12 @@ mv Makefile M4k3f1l3;
 mv elifekaM Makefile;
 
 make;
-
-
-clean;
 echo "mjpg-streamer installed.";
 
 curl -o /usr/bin/rmate https://raw.githubusercontent.com/aurora/rmate/master/rmate;
 chmod +x /usr/bin/rmate;
 mv /usr/bin/rmate /usr/bin/rsub;
 echo "rsub installed.";
-
-curl -sL https://deb.nodesource.com/setup_6.x | bash -;
-apt-get install -y nodejs;
-clean;
-echo "node installed.";
 
 
 cd ~;
@@ -61,8 +81,6 @@ npm init -y;
 npm install johnny-five edison-io mraa;
 echo "johnny-five installed.";
 echo "edison-io installed.";
-
-
 
 
 echo "uvcvideo...";
