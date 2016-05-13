@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- <meta name="viewport" content="width=device-width; height=device-height; initial-scale=1.0; maximum-scale=1.0;">  -->
+  <title>Reconbot Controls</title>
+  <style type="text/css">
+    * {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      -webkit-touch-callout: none;
+      -webkit-text-size-adjust: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+    }
+
+    body {
+      margin: 0px;
+    }
+
+    canvas {
+      display: block;
+      position: absolute;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    #control-buttons {
+      width: 100%;
+      z-index: 5;
+      position: absolute;
+    }
+
+    #video-stream {
+      width: 100%;
+      z-index: 4;
+      position: absolute;
+    }
+
+    #video-stream img {
+      width: 100%;
+    }
+
+    button {
+      border: 0px;
+      background-color: Transparent;
+      border: none;
+      cursor: pointer;
+      overflow: hidden;
+      outline: none;
+    }
+
+    .controls.camera .active {
+      background-color: DeepPink;
+    }
+
+    [data-command="up"],
+    [data-command="down"],
+    [data-command="forward"],
+    [data-command="reverse"] {
+      transform: rotate(-90deg);
+    }
+
+    /*
+    Not sure if this does anything anymore...
+     */
+    @media (min-width: 35em) {
+      .controls.camera button {
+        font-size: 100px;
+      }
+    }
+
+    @media (min-width: 45em) {
+      .controls.camera button {
+        font-size: 100px;
+      }
+    }
+
+    .controls {
+      position: fixed;
+      width: 300px;
+      height: 320px;
+      z-index: 30;
+      right: 0;
+      bottom: 0;
+    }
+
+    .controls.rover {
+      z-index: 30;
+      left: 0;
+      bottom: 0;
+    }
+
+    .controls.rover button {
+      opacity: 0.25;
+      font-size: 8rem;
+      position: absolute;
+      color: #000;
+    }
+
+    .controls.rover .left {
+      left: 0px;
+      top: 100px;
+    }
+
+    .controls.rover .right {
+      left: 210px;
+      top: 100px;
+    }
+
+    .controls.rover .up {
+      left: 101px;
+      top: 0px;
+    }
+
+    .controls.rover .center {
+      font-size: 8rem;
+      left: 80px;
+      top: 90px;
+    }
+
+    .controls.rover .down {
+      left: 101px;
+      top: 205px;
+    }
+
+    .controls.camera {
+      z-index: 30;
+      right: 0;
+      bottom: 0;
+    }
+
+    .controls.camera button {
+      opacity: 1;
+      font-size: 8rem;
+      position: absolute;
+      color: DeepPink;
+    }
+
+    .controls.camera .left {
+      left: 0px;
+      top: 100px;
+    }
+
+    .controls.camera .right {
+      left: 210px;
+      top: 100px;
+    }
+
+    .controls.camera .up {
+      left: 101px;
+      top: 0px;
+    }
+
+    .controls.camera .center {
+      font-size: 8rem;
+      left: 80px;
+      top: 90px;
+    }
+
+    .controls.camera .down {
+      left: 101px;
+      top: 205px;
+    }
+
+    input {
+      width: 4em;
+    }
+
+    #touch {}
+  </style>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/pep/0.4.1/pep.js"></script>
+</head>
+<body>
+  <div class="container" id="control-buttons">
+    <div class="controls rover">
+      <canvas touch-action="none" id="touch"></canvas>
+    </div>
+
+    <div class="controls camera">
+      <button class="center" data-component="camera" data-command="center">⨁</button><br>
+      <button class="left" data-component="camera" data-command="left">❮</button>
+      <button class="up" data-component="camera" data-command="up">❯</button><br>
+
+      <button class="down" data-component="camera" data-command="down">❮</button>
+      <button class="right" data-component="camera" data-command="right">❯</button>
+    </div>
+  </div>
+  <div class="container" id="video-stream">
+    <!-- probably needs to be set via JS? -->
+    <img src="http://ubilinux.local:8080/?action=stream" id="stream">
+  </div>
+
+  <script type="text/javascript">
+    // const things...
+    var MIN_GUTTER_WIDTH = 50;
+    var MAX_SPEED = 127;
+
+    // Program setup
+    var socket = io();
+    var throttle = document.querySelector("input[type='range']");
+    var display = document.querySelector("output");
+    var buttons = document.querySelectorAll("button");
+    var canvas = document.getElementById("touch");
+    var rover = document.querySelector(".controls.rover");
+    var context = canvas.getContext("2d");
+    var pointer = null;
+    var axis = {
+      x: 0, // -1...1
+      y: 0, // -1...1
+    };
+    var deadZone = {
+      x: 0,
+      y: 0,
+    };
+    var controls = {
+      camera: document.querySelector(".controls.camera"),
+      rover: document.querySelector(".controls.rover"),
+    };
+
+    var keyboard = {
+      active: null,
+      commands: {
+        rover: {
+          // w
+          87: "speed",
+          // x
+          88: "speed",
+          // arrow left
+          37: "left",
+          // arrow up
+          38: "fwd",
+          // arrow right
+          39: "right",
+          // arrow down
+          40: "rev",
+          // space
+          32: "stop",
+        },
+        camera: {
+          // arrow left
+          37: "left",
+          // arrow up
+          38: "up",
+          // arrow right
+          39: "right",
+          // arrow down
+          40: "down",
+          // space
+          32: "center",
+        },
+      },
+    };
+
+    var deactivatables = ["fwd", "rev", "left", "right", "up", "down"];
+
+
+    function transmit(data) {
+      socket.emit("remote-control", data);
+    }
+
+    var rValids = Object.keys(keyboard.commands.rover);
+    var cValids = Object.keys(keyboard.commands.camera);
+    var valids = rValids.concat(cValids);
+
+    document.body.onkeydown = function(event) {
+      var step = 10;
+      var component = "rover";
+      var elem, command;
+
+      if (event.shiftKey) {
+        component = "camera";
+      }
+      if (valids.indexOf(String(event.keyCode)) === -1) {
+        return;
+      }
+
+      if (event.keyCode === 87 || event.keyCode === 88) {
+        throttle.value = throttle.valueAsNumber + (event.keyCode === 87 ? step : step * -1);
+      } else {
+        if (event.repeat) {
+          return;
+        }
+      }
+
+      command = keyboard.commands[component][event.keyCode];
+      elem = document.querySelector(`[data-component="${component}"][data-command="${command}"]`);
+
+      if (elem) {
+        elem.classList.add("active");
+        setTimeout(() => {
+          elem.classList.remove("active");
+        }, 50);
+      }
+    };
+
+    Array.from(buttons).forEach(function(button) {
+      button.isDown = false;
+
+      button.addEventListener("pointerdown", function(event) {
+        var active = true;
+        var { command, component } = event.target.dataset;
+        socket.emit("remote-control", { active, command, component });
+        button.isDown = true;
+      });
+
+      button.addEventListener("pointerup", function(event) {
+        var active = false;
+        var { command, component } = event.target.dataset;
+
+        if (deactivatables.indexOf(command) !== -1) {
+          socket.emit("remote-control", { active, command, component });
+        }
+        button.isDown = false;
+      });
+    });
+
+    // var last = 0;
+    rover.addEventListener("pointermove", () => {
+      var now = Date.now();
+      var component = "rover";
+
+      // Throttle drive control transmission down to 20Hz
+      // if (pointer !== null && now - 50 >= last) {
+      if (pointer !== null) {
+        // last = now;
+        socket.emit("remote-control", { component, axis });
+      }
+    }, false);
+
+    rover.addEventListener("pointerup", () => {
+      var component = "rover";
+      var axis = Object.assign({}, deadZone);
+      socket.emit("remote-control", { component, axis });
+    }, false);
+
+    canvas.addEventListener("pointermove", onPointerMove, false);
+    canvas.addEventListener("pointerdown", onPointerDown, false);
+    canvas.addEventListener("pointerup", onPointerUp, false);
+    canvas.addEventListener("pointercancel", onPointerUp, false);
+    canvas.addEventListener("pointerleave", onPointerUp, false);
+
+    window.onorientationchange = resizeCanvas;
+    window.onresize = resizeCanvas;
+
+    function resizeCanvas() {
+      canvas.width = rover.clientWidth;
+      canvas.height = rover.clientHeight;
+      window.scrollTo(0, 0);
+    }
+
+    function draw() {
+      var x, y;
+
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      context.beginPath();
+      context.strokeStyle = "SlateGray";
+      context.lineWidth = 1;
+
+      context.moveTo(150, 10);
+      context.lineTo(150, 310);
+      context.closePath();
+
+      context.moveTo(10, 160);
+      context.lineTo(290, 160);
+      context.closePath();
+      context.stroke();
+
+      context.beginPath();
+      context.strokeStyle = "deeppink";
+      context.fillStyle = "deeppink";
+      context.lineWidth = "6";
+
+      if (pointer) {
+        x = pointer.x;
+        y = pointer.y;
+
+        // Disallow moving out of the control box
+        if (x > canvas.width - MIN_GUTTER_WIDTH) {
+          x = canvas.width - MIN_GUTTER_WIDTH;
+        }
+
+        if (x < MIN_GUTTER_WIDTH) {
+          x = MIN_GUTTER_WIDTH;
+        }
+
+        if (y > canvas.height - MIN_GUTTER_WIDTH) {
+          y = canvas.height - MIN_GUTTER_WIDTH;
+        }
+
+        if (y < MIN_GUTTER_WIDTH) {
+          y = MIN_GUTTER_WIDTH;
+        }
+
+        context.arc(x, y, 40, 0, Math.PI * 2, true);
+        context.fill();
+      } else {
+        context.arc(150, 160, 60, 0, Math.PI * 2, true);
+        context.stroke();
+      }
+      requestAnimationFrame(draw);
+    }
+
+    function onPointerDown(event) {
+      var x = event.clientX;
+      var y = event.clientY - (window.innerHeight - canvas.height);
+
+      if (event.pointerId === 1) {
+        pointer = {
+          x: x,
+          y: y,
+          pointerType: event.pointerType,
+          pointerId: event.pointerId
+        };
+      }
+    }
+
+    function onPointerMove(event) {
+      var x = event.clientX;
+      var y = event.clientY - (window.innerHeight - canvas.height);
+
+      if (pointer && event.pointerId === 1) {
+        // W - MIN_GUTTER_WIDTH
+        // H - MIN_GUTTER_WIDTH
+        axis.x = constrain(scale(x, MIN_GUTTER_WIDTH, canvas.width - MIN_GUTTER_WIDTH, -MAX_SPEED, MAX_SPEED), -MAX_SPEED, MAX_SPEED);
+        axis.y = constrain(scale(y, MIN_GUTTER_WIDTH, canvas.height - MIN_GUTTER_WIDTH, -MAX_SPEED, MAX_SPEED), -MAX_SPEED, MAX_SPEED);
+
+        axis.y *= -1;
+        // console.log(axis);
+
+        pointer.x = x;
+        pointer.y = y;
+      } else {
+        axis = Object.assign({}, deadZone);
+      }
+    }
+
+    function onPointerUp(e) {
+      pointer = null;
+    }
+
+    function fscale(value, fromLow, fromHigh, toLow, toHigh) {
+      return (value - fromLow) * (toHigh - toLow) /
+        (fromHigh - fromLow) + toLow;
+    }
+
+    function scale(value, fromLow, fromHigh, toLow, toHigh) {
+      return fscale(value, fromLow, fromHigh, toLow, toHigh) | 0;
+    }
+
+    function constrain(value, lower, upper) {
+      return Math.min(upper, Math.max(lower, value));
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      resizeCanvas();
+      requestAnimationFrame(draw);
+    });
+  </script>
+</body>
+</html>
