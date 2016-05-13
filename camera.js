@@ -26,29 +26,24 @@ class Camera {
 
     if (direction === "left") {
       this.pan.to(0, ms);
-      return;
     }
 
     if (direction === "right") {
       this.pan.to(180, ms);
-      return;
     }
 
     if (direction === "up") {
       this.tilt.to(10, ms);
-      return;
     }
 
     if (direction === "down") {
       this.tilt.to(100, ms);
-      return;
     }
 
     if (direction === "center") {
       this.stop();
       this.tilt.to(60);
       this.pan.to(98);
-      return;
     }
 
     return this;
