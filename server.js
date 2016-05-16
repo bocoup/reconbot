@@ -4,12 +4,12 @@ const io = require("socket.io")(http);
 
 app.get("/", (req, res) => res.sendFile(__dirname + "/index.html"));
 
-const { Board, Led, Servo, Motor, Fn } = require("johnny-five");
-// const Edison = require("edison-io");
+const { Board, Fn } = require("johnny-five");
+const Edison = require("edison-io");
 const Camera = require("./camera");
 const Rover = require("./rover");
 const board = new Board({
-  // io: new Edison()
+  io: new Edison()
 });
 
 const DEADZONE = 5;
