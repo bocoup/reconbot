@@ -8,6 +8,8 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+echo 'reconbot-x' > /etc/hostname
+
 # configure wifi here...
 
 # to connect wifi get the has by running
@@ -48,7 +50,7 @@ curl -sL https://deb.nodesource.com/setup_6.x | bash -;
 # packages to install
 # apt-get update # done automatically by nodesource
 apt-get upgrade -y;
-apt-get install -y sudo libjpeg-dev libv4l-dev nodejs;
+apt-get install -y sudo libjpeg-dev libv4l-dev nodejs htop tmux;
 
 # remove packages not needed anymore and then all downloaded .deb files
 apt-get autoremove -y;
@@ -65,6 +67,8 @@ cat Makefile | sed -e "s/PLUGINS += input_gspcav1.so/# PLUGINS += input_gspcav1.
 mv Makefile M4k3f1l3;
 mv elifekaM Makefile;
 
+#todo add to path and maybe make install
+
 make;
 echo "mjpg-streamer installed.";
 
@@ -73,20 +77,21 @@ chmod +x /usr/bin/rmate;
 mv /usr/bin/rmate /usr/bin/rsub;
 echo "rsub installed.";
 
+# setup the latest npm
+npm config -g progress=false
+npm install -g npm;
 
+
+# clone and install the reconbot
 cd ~;
-mkdir reconbot;
-cd reconbot/;
-npm init -y;
-npm install johnny-five edison-io mraa;
-echo "johnny-five installed.";
-echo "edison-io installed.";
+git clone https://github.com/bocoup/reconbot.git
+cd reconbot;
+npm install --verbose;
+
+# echo "uvcvideo...";
+# find / -name uvc*;
 
 
-echo "uvcvideo...";
-find / -name uvc*;
+# lsmod | grep uvc;
 
-
-lsmod | grep uvc;
-
-$(ls /dev/video0);
+# $(ls /dev/video0);

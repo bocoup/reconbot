@@ -2,10 +2,9 @@
   "name": "reconbot",
   "version": "1.0.0",
   "description": "",
-  "main": "camera.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -17,11 +16,14 @@
   "bugs": {
     "url": "https://github.com/bocoup/reconbot/issues"
   },
+  "engines": {
+    "node": "^6.0.0"
+  },
   "homepage": "https://github.com/bocoup/reconbot#readme",
   "dependencies": {
     "edison-io": "^0.9.4",
     "express": "^4.13.4",
-    "johnny-five": "github:rwaldron/johnny-five",
+    "johnny-five": "^0.9.0",
     "socket.io": "^1.4.6"
   },
   "devDependencies": {}
