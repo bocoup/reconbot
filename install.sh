@@ -70,6 +70,12 @@ mv elifekaM Makefile;
 #todo add to path and maybe make install
 
 make;
+make install;
+# setup the library path for mjpg-streamer because it isn't setup by default
+echo '
+LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH
+' > /etc/profile.d/mjpg-streamer.sh
 echo "mjpg-streamer installed.";
 
 curl -o /usr/bin/rmate https://raw.githubusercontent.com/aurora/rmate/master/rmate;
@@ -78,9 +84,8 @@ mv /usr/bin/rmate /usr/bin/rsub;
 echo "rsub installed.";
 
 # setup the latest npm
-npm config -g progress=false
+npm config -g set progress=false
 npm install -g npm;
-
 
 # clone and install the reconbot
 cd ~;
@@ -90,8 +95,5 @@ npm install --verbose;
 
 # echo "uvcvideo...";
 # find / -name uvc*;
-
-
 # lsmod | grep uvc;
-
 # $(ls /dev/video0);

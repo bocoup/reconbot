@@ -193,7 +193,7 @@
   </div>
   <div class="container" id="video-stream">
     <!-- probably needs to be set via JS? -->
-    <img src="http://ubilinux.local:8080/?action=stream" id="stream">
+    <img src="/video" id="stream">
   </div>
 
   <script type="text/javascript">
@@ -268,44 +268,13 @@
     var cValids = Object.keys(keyboard.commands.camera);
     var valids = rValids.concat(cValids);
 
-    document.body.onkeydown = function(event) {
-      var step = 10;
-      var component = "rover";
-      var elem, command;
-
-      if (event.shiftKey) {
-        component = "camera";
-      }
-      if (valids.indexOf(String(event.keyCode)) === -1) {
-        return;
-      }
-
-      if (event.keyCode === 87 || event.keyCode === 88) {
-        throttle.value = throttle.valueAsNumber + (event.keyCode === 87 ? step : step * -1);
-      } else {
-        if (event.repeat) {
-          return;
-        }
-      }
-
-      command = keyboard.commands[component][event.keyCode];
-      elem = document.querySelector(`[data-component="${component}"][data-command="${command}"]`);
-
-      if (elem) {
-        elem.classList.add("active");
-        setTimeout(() => {
-          elem.classList.remove("active");
-        }, 50);
-      }
-    };
-
     Array.from(buttons).forEach(function(button) {
       button.isDown = false;
 
       button.addEventListener("pointerdown", function(event) {
         var active = true;
         var { command, component } = event.target.dataset;
-        socket.emit("remote-control", { active, command, component });
+        transmit({ active, command, component });
         button.isDown = true;
       });
 
@@ -314,13 +283,13 @@
         var { command, component } = event.target.dataset;
 
         if (deactivatables.indexOf(command) !== -1) {
-          socket.emit("remote-control", { active, command, component });
+          transmit({ active, command, component });
         }
         button.isDown = false;
       });
     });
 
-    // var last = 0;
+    var last = 0;
     rover.addEventListener("pointermove", () => {
       var now = Date.now();
       var component = "rover";
@@ -329,14 +298,14 @@
       // if (pointer !== null && now - 50 >= last) {
       if (pointer !== null) {
         // last = now;
-        socket.emit("remote-control", { component, axis });
+        transmit({ component, axis });
       }
     }, false);
 
     rover.addEventListener("pointerup", () => {
       var component = "rover";
       var axis = Object.assign({}, deadZone);
-      socket.emit("remote-control", { component, axis });
+      transmit({ component, axis });
     }, false);
 
     canvas.addEventListener("pointermove", onPointerMove, false);
