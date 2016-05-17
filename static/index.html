@@ -199,9 +199,14 @@
   </div>
 
   <script type="text/javascript">
-    if (screenfull.enabled) {
-        screenfull.request(document.body);
-    }
+    document.body.addEventListener('click', function() {
+      if (screenfull.isFullscreen) {
+        return;
+      }
+      if (screenfull.enabled) {
+        screenfull.request();
+      }
+    });
 
     // const things...
     var MIN_GUTTER_WIDTH = 50;

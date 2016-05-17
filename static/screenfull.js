@@ -1,3 +1,8 @@
+/*!
+* screenfull
+* v3.0.0 - 2015-11-24
+* (c) Sindre Sorhus; MIT License
+*/
 (function () {
 	'use strict';
 
