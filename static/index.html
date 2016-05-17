@@ -199,7 +199,7 @@
   <script type="text/javascript">
     // const things...
     var MIN_GUTTER_WIDTH = 50;
-    var MAX_SPEED = 127;
+    var MAX_SPEED = 100;
 
     // Program setup
     var socket = io();
@@ -210,6 +210,10 @@
     var rover = document.querySelector(".controls.rover");
     var context = canvas.getContext("2d");
     var pointer = null;
+    var previous = {
+      x: 0, // -1...1
+      y: 0, // -1...1
+    };
     var axis = {
       x: 0, // -1...1
       y: 0, // -1...1
@@ -223,39 +227,72 @@
       rover: document.querySelector(".controls.rover"),
     };
 
-    var keyboard = {
-      active: null,
-      commands: {
-        rover: {
-          // w
-          87: "speed",
-          // x
-          88: "speed",
-          // arrow left
-          37: "left",
-          // arrow up
-          38: "fwd",
-          // arrow right
-          39: "right",
-          // arrow down
-          40: "rev",
-          // space
-          32: "stop",
-        },
-        camera: {
-          // arrow left
-          37: "left",
-          // arrow up
-          38: "up",
-          // arrow right
-          39: "right",
-          // arrow down
-          40: "down",
-          // space
-          32: "center",
-        },
-      },
-    };
+    // // This can be restored when we re-introduce keyboard controls
+    // var keyboard = {
+    //   active: null,
+    //   commands: {
+    //     rover: {
+    //       // w
+    //       87: "speed",
+    //       // x
+    //       88: "speed",
+    //       // arrow left
+    //       37: "left",
+    //       // arrow up
+    //       38: "fwd",
+    //       // arrow right
+    //       39: "right",
+    //       // arrow down
+    //       40: "rev",
+    //       // space
+    //       32: "stop",
+    //     },
+    //     camera: {
+    //       // arrow left
+    //       37: "left",
+    //       // arrow up
+    //       38: "up",
+    //       // arrow right
+    //       39: "right",
+    //       // arrow down
+    //       40: "down",
+    //       // space
+    //       32: "center",
+    //     },
+    //   },
+    // };
+
+    // document.body.onkeydown = function(event) {
+    //   var step = 10;
+    //   var component = "rover";
+    //   var elem, command;
+
+    //   if (event.shiftKey) {
+    //     component = "camera";
+    //   }
+    //   if (valids.indexOf(String(event.keyCode)) === -1) {
+    //     return;
+    //   }
+
+    //   if (event.keyCode === 87 || event.keyCode === 88) {
+    //     throttle.value = throttle.valueAsNumber + (event.keyCode === 87 ? step : step * -1);
+    //   } else {
+    //     if (event.repeat) {
+    //       return;
+    //     }
+    //   }
+
+    //   command = keyboard.commands[component][event.keyCode];
+    //   elem = document.querySelector(`[data-component="${component}"][data-command="${command}"]`);
+
+    //   if (elem) {
+    //     elem.classList.add("active");
+    //     setTimeout(() => {
+    //       elem.classList.remove("active");
+    //     }, 50);
+    //   }
+    // };
+
 
     var deactivatables = ["fwd", "rev", "left", "right", "up", "down"];
 
@@ -264,9 +301,9 @@
       socket.emit("remote-control", data);
     }
 
-    var rValids = Object.keys(keyboard.commands.rover);
-    var cValids = Object.keys(keyboard.commands.camera);
-    var valids = rValids.concat(cValids);
+    // var rValids = Object.keys(keyboard.commands.rover);
+    // var cValids = Object.keys(keyboard.commands.camera);
+    // var valids = rValids.concat(cValids);
 
     Array.from(buttons).forEach(function(button) {
       button.isDown = false;
@@ -293,12 +330,35 @@
     rover.addEventListener("pointermove", () => {
       var now = Date.now();
       var component = "rover";
+      var canTransmit = false;
+      var roundAxis = {};
 
       // Throttle drive control transmission down to 20Hz
       // if (pointer !== null && now - 50 >= last) {
       if (pointer !== null) {
         // last = now;
-        transmit({ component, axis });
+
+        if (axis.x !== previous.x || axis.y !== previous.y) {
+          if (axis.x >= (previous.x + 10) ||
+              axis.x <= (previous.x - 10)) {
+            canTransmit = true;
+          }
+
+          if (axis.y >= (previous.y + 10) ||
+              axis.y <= (previous.y - 10)) {
+            canTransmit = true;
+          }
+
+          if (canTransmit) {
+            console.log("Axis has changed enough to transmit");
+            Object.assign(previous, axis, roundAxis);
+
+            roundAxis.x = Math.round(axis.x / 10) * 10;
+            roundAxis.y = Math.round(axis.y / 10) * 10;
+
+            transmit({ component, axis: roundAxis });
+          }
+        }
       }
     }, false);
 
@@ -401,8 +461,6 @@
         axis.y = constrain(scale(y, MIN_GUTTER_WIDTH, canvas.height - MIN_GUTTER_WIDTH, -MAX_SPEED, MAX_SPEED), -MAX_SPEED, MAX_SPEED);
 
         axis.y *= -1;
-        // console.log(axis);
-
         pointer.x = x;
         pointer.y = y;
       } else {
@@ -410,9 +468,22 @@
       }
     }
 
-    function onPointerUp(e) {
+    function onPointerUp(event) {
+      var component = "rover";
+
       pointer = null;
+
+      if (event.type !== "pointerleave") {
+        transmit({ component, axis: deadZone });
+      }
     }
+
+    // function onPointerLeave(e) {
+    //   pointer = null;
+    //   var component = "rover";
+    //   transmit({ component, axis: deadZone });
+    // }
+
 
     function fscale(value, fromLow, fromHigh, toLow, toHigh) {
       return (value - fromLow) * (toHigh - toLow) /
