@@ -4,7 +4,7 @@
   "description": "",
   "main": "lib/server.js",
   "scripts": {
-    "start": "node lib/server",
+    "start": "node lib/server --expose-gc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
