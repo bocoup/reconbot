@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
   <!-- <meta name="viewport" content="width=device-width; height=device-height; initial-scale=1.0; maximum-scale=1.0;">  -->
   <title>Reconbot Controls</title>
   <style type="text/css">
@@ -174,7 +175,8 @@
     #touch {}
   </style>
   <script src="/socket.io/socket.io.js"></script>
-  <script src="https://code.jquery.com/pep/0.4.1/pep.js"></script>
+  <script src="/pep.js"></script>
+  <script src="/screenfull.js"></script>
 </head>
 <body>
   <div class="container" id="control-buttons">
@@ -197,6 +199,10 @@
   </div>
 
   <script type="text/javascript">
+    if (screenfull.enabled) {
+        screenfull.request(document.body);
+    }
+
     // const things...
     var MIN_GUTTER_WIDTH = 50;
     var MAX_SPEED = 100;
