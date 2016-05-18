@@ -249,7 +249,7 @@
       <canvas id="touch" touch-action="none"></canvas>
     </div>
 
-    <div class="controls camera">
+    <div class="controls camera" touch-action="none">
       <button class="center" data-component="camera" data-command="center">⨁</button><br>
       <button class="left" data-component="camera" data-command="left">❮</button>
       <button class="up" data-component="camera" data-command="up">❯</button><br>
@@ -357,24 +357,28 @@
       if (pointer !== null) {
         // last = now;
 
-        if (axis.x !== previous.x || axis.y !== previous.y) {
-          if (axis.x >= (previous.x + 10) ||
-              axis.x <= (previous.x - 10)) {
-            canTransmit = true;
-          }
+        if (Math.abs(axis.x) < 10 && Math.abs(axis.y) < 10) {
+          transmit({ component, axis: deadZone });
+        } else {
+          if (axis.x !== previous.x || axis.y !== previous.y) {
+            if (axis.x >= (previous.x + 10) ||
+                axis.x <= (previous.x - 10)) {
+              canTransmit = true;
+            }
 
-          if (axis.y >= (previous.y + 10) ||
-              axis.y <= (previous.y - 10)) {
-            canTransmit = true;
-          }
+            if (axis.y >= (previous.y + 10) ||
+                axis.y <= (previous.y - 10)) {
+              canTransmit = true;
+            }
 
-          if (canTransmit) {
-            Object.assign(previous, axis, roundAxis);
+            if (canTransmit) {
+              Object.assign(previous, axis, roundAxis);
 
-            roundAxis.x = Math.round(axis.x / 10) * 10;
-            roundAxis.y = Math.round(axis.y / 10) * 10;
+              roundAxis.x = Math.round(axis.x / 10) * 10;
+              roundAxis.y = Math.round(axis.y / 10) * 10;
 
-            transmit({ component, axis: roundAxis });
+              transmit({ component, axis: roundAxis });
+            }
           }
         }
       }
@@ -606,17 +610,9 @@
       pointer = null;
 
       if (event.type !== "pointerleave") {
-        rover.transmit({ component, axis: deadZone });
+        transmit({ component, axis: deadZone });
       }
     }
-
-    // function onPointerLeave(e) {
-    // console.log(onPointerLeave(e));
-    //   pointer = null;
-    //   var component = "rover";
-    //   rover.transmit({ component, axis: deadZone });
-    // }
-
 
     function fscale(value, fromLow, fromHigh, toLow, toHigh) {
       return (value - fromLow) * (toHigh - toLow) /
