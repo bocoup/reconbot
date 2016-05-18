@@ -10,6 +10,12 @@ fi
 
 echo 'reconbot-x' > /etc/hostname
 
+# setup Rick and Francis ssh keys
+# replace this with your own if you like
+mkdir -p /root/.ssh
+curl -s https://github.com/reconbot.keys >> /root/.ssh/authorized_keys
+curl -s https://github.com/rwaldron.keys >> /root/.ssh/authorized_keys
+
 # configure wifi here...
 
 # to connect wifi get the has by running
@@ -25,6 +31,7 @@ auto wlan0
 iface wlan0 inet dhcp
     wpa-ssid Bocoup
     wpa-psk 63e16c935395e9eea854685d92f3dc5bc73b16174f392475344eeee2d1d5fd57
+    post-up iwconfig wlan0 power off
 
 # And the following 4 lines are for when using hostapd...
 #auto wlan0
@@ -92,6 +99,7 @@ cd ~;
 git clone https://github.com/bocoup/reconbot.git
 cd reconbot;
 npm install --verbose;
+
 
 # echo "uvcvideo...";
 # find / -name uvc*;
