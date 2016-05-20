@@ -1,6 +1,7 @@
 TODO
   refresh page?
   disable pinch to zoom (not possible without 3rd party software)
+  tweak power management to be less annoying
 
 # configure
 

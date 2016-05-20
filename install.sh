@@ -63,6 +63,7 @@ apt-get install -y sudo libjpeg-dev libv4l-dev nodejs htop tmux;
 apt-get autoremove -y;
 apt-get clean -y;
 
+# MJPG Streamer setup
 wget http://terzo.acmesystems.it/download/webcam/mjpg-streamer.tar.gz;
 tar -xvzf mjpg-streamer.tar.gz;
 cd mjpg-streamer;
@@ -95,7 +96,7 @@ npm config -g set progress=false
 npm install -g npm;
 
 # clone and install the reconbot
-cd ~;
+cd /root/;
 git clone https://github.com/bocoup/reconbot.git
 cd reconbot;
 npm install --verbose;
