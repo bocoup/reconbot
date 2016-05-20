@@ -3,18 +3,13 @@
 # screen /dev/tty.usbserial-XXXX 115200
 set -e
 
-if [[ $EUID -ne 0 ]]; then
+if [ "$(id -u)" != "0" ]; then
   echo "You must be a root user root:edison" 2>&1
   exit 1
 fi
 
-echo 'reconbot-x' > /etc/hostname
-
-# setup Rick and Francis ssh keys
-# replace this with your own if you like
-mkdir -p /root/.ssh
-curl -s https://github.com/reconbot.keys >> /root/.ssh/authorized_keys
-curl -s https://github.com/rwaldron.keys >> /root/.ssh/authorized_keys
+echo 'reconbot-X' > /etc/hostname
+echo "set hostname";
 
 # configure wifi here...
 
@@ -28,16 +23,21 @@ auto usb0
 iface usb0 inet dhcp
 
 auto wlan0
+# iface wlan0 inet static
+#     address 192.168.42.1
+#     netmask 255.255.255.0
+
 iface wlan0 inet dhcp
-    wpa-ssid Bocoup
-    wpa-psk 63e16c935395e9eea854685d92f3dc5bc73b16174f392475344eeee2d1d5fd57
+  wpa-ssid intelMF5
+  wpa-psk 7774e583a7f47d8413afeb6f5000c1e15842dc1f8d0e1afc4c7db9858f75a122
+    # wpa-ssid Bocoup
+    # wpa-psk 63e16c935395e9eea854685d92f3dc5bc73b16174f392475344eeee2d1d5fd57
+
+    # in all wifi cases
     post-up iwconfig wlan0 power off
 
+
 # And the following 4 lines are for when using hostapd...
-#auto wlan0
-#iface wlan0 inet static
-#    address 192.168.42.1
-#    netmask 255.255.255.0
 ' > /etc/network/interfaces
 
 ifdown usb0
@@ -46,6 +46,34 @@ ifdown wlan0
 ifup wlan0
 
 # then...
+
+#configure hostap
+
+# # config hostap
+# cp /etc/hostapd/hostapd.conf /etc/hostapd/hostapd.conf.bak
+# cat /etc/hostapd/hostapd.conf.bak | \
+#   sed -e "s/^ssid=edison_ap$/ssid=reconbot-x/" | \
+#   sed -e "s/^channel=1$/channel=acs_survey/" | \
+#   sed -e "s/^wpa_passphrase=.*$/wpa_passphrase=johnny-five/" \
+#   sed -e "/s/^hw_mode=g$/hw_mode=ad/" \
+#   > /etc/hostapd/hostapd.conf
+
+# # enable the config file so it starts
+# cp /etc/init.d/hostapd /root/hostapd.init.bak
+# cat /root/hostapd.init.bak | \
+#   sed -e "s/^DAEMON_CONF=$/DAEMON_CONF=\/etc\/hostapd\/hostapd.conf/" \
+#   > /etc/init.d/hostapd
+
+# # start it
+
+
+
+# setup Rick and Francis ssh keys
+# replace this with your own if you like
+mkdir -p /root/.ssh
+curl -s https://github.com/reconbot.keys >> /root/.ssh/authorized_keys
+curl -s https://github.com/rwaldron.keys >> /root/.ssh/authorized_keys
+
 
 # setup locals
 # echo -e 'LANG="en_US.UTF-8"\nLANGUAGE="en_US:en"\n' > /etc/default/locale;
@@ -101,6 +129,88 @@ git clone https://github.com/bocoup/reconbot.git
 cd reconbot;
 npm install --verbose;
 
+
+# setup upstart services for streamer and the bandit
+# echo '
+# description "daemon for api"
+
+# start on started network-services
+# stop on shutdown
+# respawn limit 4 0
+
+# script
+#   /root/reconbot/streamer.sh
+# end script
+# ' > /etc/init/streamer.conf
+
+# echo '
+# description "daemon for reconbot"
+
+# start on started network-services
+# stop on shutdown
+# respawn limit 4 0
+
+# env NODE_ENV=production
+
+# script
+#   /usr/bin/npm run start --prefix /root/reconbot/
+# end script
+
+# ' > /etc/init/reconbot.conf
+
+
+# service streamer start
+# service reconbot start
+
+# setup reconbot system V startup scripts
+
+echo '
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          reconbot
+### END INIT INFO
+
+do_start () {
+        # Update motd
+        cd /root/reconbot;
+        ./streamer.sh &
+        npm run start &
+}
+
+do_status () {
+
+}
+
+do_stop () {
+  killall mjpg_streamer
+  killall node
+}
+
+case "$1" in
+  start|"")
+        do_start
+        ;;
+  restart|reload|force-reload)
+        echo "Error: argument '$1' not supported" >&2
+        exit 3
+        ;;
+  stop)
+        # do_stop
+        ;;
+  status)
+        do_status
+        exit $?
+        ;;
+  *)
+        echo "Usage: reconbot [start|stop|status]" >&2
+        exit 3
+        ;;
+esac
+
+:
+
+' > /etc/init.d/reconbot
+chmod +x /etc/init.d/reconbot
 
 # echo "uvcvideo...";
 # find / -name uvc*;
