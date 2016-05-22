@@ -28,10 +28,13 @@ auto wlan0
 #     netmask 255.255.255.0
 
 iface wlan0 inet dhcp
-  wpa-ssid intelMF5
-  wpa-psk 7774e583a7f47d8413afeb6f5000c1e15842dc1f8d0e1afc4c7db9858f75a122
-    # wpa-ssid Bocoup
-    # wpa-psk 63e16c935395e9eea854685d92f3dc5bc73b16174f392475344eeee2d1d5fd57
+
+  wpa-ssid Johnny-5G
+  wpa-psk 44d6cc4524bf1fb575e5f501fbdd21895842f3511f3a883652015ea41f57e6e5
+  # wpa-ssid intelMF5
+  # wpa-psk 7774e583a7f47d8413afeb6f5000c1e15842dc1f8d0e1afc4c7db9858f75a122
+  # wpa-ssid Bocoup
+  # wpa-psk 63e16c935395e9eea854685d92f3dc5bc73b16174f392475344eeee2d1d5fd57
 
     # in all wifi cases
     post-up iwconfig wlan0 power off
