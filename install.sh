@@ -20,15 +20,12 @@ iface lo inet loopback
 
 Set to auto so we can share our net connection with it
 auto usb0
-iface usb0 inet dhcp
+iface usb0 inet static
+  address 192.168.42.1
+  netmask 255.255.255.0
 
 auto wlan0
-# iface wlan0 inet static
-#     address 192.168.42.1
-#     netmask 255.255.255.0
-
 iface wlan0 inet dhcp
-
   wpa-ssid Johnny-5G
   wpa-psk 44d6cc4524bf1fb575e5f501fbdd21895842f3511f3a883652015ea41f57e6e5
   # wpa-ssid intelMF5
@@ -36,8 +33,8 @@ iface wlan0 inet dhcp
   # wpa-ssid Bocoup
   # wpa-psk 63e16c935395e9eea854685d92f3dc5bc73b16174f392475344eeee2d1d5fd57
 
-    # in all wifi cases
-    post-up iwconfig wlan0 power off
+  # disable power management
+  post-up iwconfig wlan0 power off
 
 
 # And the following 4 lines are for when using hostapd...
