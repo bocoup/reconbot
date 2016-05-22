@@ -68,4 +68,4 @@ esac
 
 ' > /etc/init.d/reconbot
 chmod +x /etc/init.d/reconbot
-ln -s /etc/init.d/reconbot /etc/rc5.d/S04reconbot
+# ln -s /etc/init.d/reconbot /etc/rc5.d/S04reconbot
