@@ -1,6 +1,6 @@
 # Reconbot
 
-Build your own Reconbot and drive it with your phone. Build for Intel by Bocoup, maintained by bocoup and the nodebots community.
+Build your own Reconbot and drive it with your phone. Built for Intel by Bocoup, maintained by bocoup and the nodebots community.
 
 ![](intel-reconbot.png)
 
