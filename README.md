@@ -1,4 +1,10 @@
-# reconbot
+# Reconbot
+
+Build your own Reconbot and drive it with your phone. Build for Intel by Bocoup, maintained by bocoup and the nodebots community.
+
+![](intel-reconbot.png)
+
+
 
 # Buy these parts
  - Robot base https://www.servocity.com/html/junior_runt_rovertm__637142_.html
@@ -33,5 +39,3 @@ Follow the instructions from the [spark fun ubilinux install guide](https://lear
  - git push this repo into your project's remote repository
  - wait 5-10 minutes for it to download for the first time
  - Drive your robot around by browsing to it's IP address in the resin dashboard
-
-![](recon-remote-ui.png)
