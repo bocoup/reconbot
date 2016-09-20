@@ -18,24 +18,15 @@
     body, html {
       margin: 0px;
       height: 100%;
-      position: relative;
+      position: fixed;
     }
+
     body {
       overflow: auto;
     }
 
     canvas {
       display: block;
-      position: absolute;
-    }
-
-    .container {
-      text-align: center;
-    }
-
-    #control-buttons {
-      width: 100%;
-      z-index: 5;
       position: absolute;
     }
 
@@ -57,6 +48,16 @@
       margin: auto;
       min-width: 50%;
       min-height: 50%;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    #control-buttons {
+      width: 100%;
+      z-index: 5;
+      position: absolute;
     }
 
     button {
