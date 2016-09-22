@@ -48,194 +48,50 @@
       margin: auto;
       min-width: 50%;
       min-height: 50%;
+      z-index: 0;
     }
 
     .container {
       text-align: center;
     }
 
-    #control-buttons {
-      width: 100%;
-      z-index: 5;
-      position: absolute;
-    }
-
-    button {
-      border: 0px;
-      background-color: Transparent;
-      border: none;
-      cursor: pointer;
-      overflow: hidden;
-      outline: none;
-    }
-
-    .controls.camera .active {
-      background-color: DeepPink;
-    }
-
-    [data-command="up"],
-    [data-command="down"],
-    [data-command="forward"],
-    [data-command="reverse"] {
-      transform: rotate(-90deg);
-    }
-
     .controls {
       position: fixed;
       width: 300px;
-      height: 320px;
-      z-index: 30;
+      height: 300px;
+      z-index: 10;
       right: 0;
       bottom: 0;
     }
 
     .controls.rover {
-      z-index: 30;
+      z-index: 10;
+      bottom: 0;
+    }
+
+    .controls.rover.left {
       left: 0;
-      bottom: 0;
     }
-
-    .controls.rover button {
-      opacity: 0.25;
-      font-size: 8rem;
-      position: absolute;
-      color: #000;
-    }
-
-    .controls.rover .left {
-      left: 0px;
-      top: 100px;
-    }
-
-    .controls.rover .right {
-      left: 210px;
-      top: 100px;
-    }
-
-    .controls.rover .up {
-      left: 101px;
-      top: 0px;
-    }
-
-    .controls.rover .center {
-      font-size: 8rem;
-      left: 80px;
-      top: 90px;
-    }
-
-    .controls.rover .down {
-      left: 101px;
-      top: 205px;
-    }
-
-    .controls.camera {
-      z-index: 30;
+    .controls.rover.right {
       right: 0;
-      bottom: 0;
     }
 
-    .controls.camera button {
-      opacity: 1;
-      font-size: 8rem;
+    #toggler {
+      z-index: 20;
+    }
+
+    #toggler button {
       position: absolute;
-      color: DeepPink;
-    }
-
-
-    .controls.camera button:active,
-    .controls.camera button:active {
-      opacity: 1;
-      font-size: 8rem;
-      position: absolute;
-      color: LightPink;
-    }
-
-
-    .controls.camera .left {
-      left: 0px;
-      top: 100px;
-    }
-
-    .controls.camera .right {
-      left: 210px;
-      top: 100px;
-    }
-
-    .controls.camera .up {
-      left: 101px;
-      top: 0px;
-    }
-
-    .controls.camera .center {
-      font-size: 8rem;
-      left: 80px;
-      top: 90px;
-    }
-
-    .controls.camera .down {
-      left: 101px;
-      top: 205px;
-    }
-
-    #touch {}
-
-    /*
-    TODO....
-     */
-    @media (min-width: 35em) {
-      .controls.camera .left {
-        left: 0px;
-        top: 100px;
-      }
-
-      .controls.camera .right {
-        left: 210px;
-        top: 100px;
-      }
-
-      .controls.camera .up {
-        left: 101px;
-        top: 0px;
-      }
-
-      .controls.camera .center {
-        font-size: 8rem;
-        left: 80px;
-        top: 90px;
-      }
-
-      .controls.camera .down {
-        left: 101px;
-        top: 205px;
-      }
-    }
-
-    @media (min-width: 45em) {
-      .controls.camera .left {
-        left: 0px;
-        top: 100px;
-      }
-
-      .controls.camera .right {
-        left: 210px;
-        top: 100px;
-      }
-
-      .controls.camera .up {
-        left: 101px;
-        top: 0px;
-      }
-
-      .controls.camera .center {
-        font-size: 8rem;
-        left: 80px;
-        top: 90px;
-      }
-
-      .controls.camera .down {
-        left: 101px;
-        top: 205px;
-      }
+      -webkit-text-fill-color: silver;
+      -webkit-text-stroke-color: black;
+      -webkit-text-stroke-width: 3px;
+      text-fill-color: silver;
+      text-stroke-color: black;
+      text-stroke-width: 3px;
+      font-size: 3rem;
+      border: 0;
+      background-color: transparent;
+      z-index: 20;
     }
 
   </style>
@@ -243,384 +99,400 @@
   <script src="/pep.js"></script>
 </head>
 <body>
-  <div class="container" id="control-buttons" touch-action="none">
-    <div class="controls rover" touch-action="none">
-      <canvas id="touch" touch-action="none"></canvas>
-    </div>
-
-    <div class="controls camera" touch-action="none">
-      <button class="center" data-component="camera" data-command="center">⨁</button><br>
-      <button class="left" data-component="camera" data-command="left">❮</button>
-      <button class="up" data-component="camera" data-command="up">❯</button><br>
-
-      <button class="down" data-component="camera" data-command="down">❮</button>
-      <button class="right" data-component="camera" data-command="right">❯</button>
-    </div>
+  <div id="toggler">
+    <button>&#8644;</button>
   </div>
+  <div class="controls rover right" touch-action="none">
+    <canvas id="steering"></canvas>
+  </div>
+
+  <div class="controls rover left" touch-action="none">
+    <canvas id="camera"></canvas>
+  </div>
+
   <div class="container" id="video-stream">
-    <!-- probably needs to be set via JS? -->
     <img src="/video" id="stream">
   </div>
+  <script>
+    // const-like things...
+    var PAD20 = 20;
+    var PAD40 = 40;
+    var PAD60 = 60;
 
-  <script type="text/javascript">
-
-    // const things...
-    var MIN_GUTTER_WIDTH = 50;
-    var MAX_SPEED = 100;
+    var PADDING = 50;
+    var MIN_MAX = 100;
 
     // Program setup
     var socket = io();
-    var display = document.querySelector("output");
-    var buttons = document.querySelectorAll("button");
-    var canvas = document.getElementById("touch");
-    var rover = document.querySelector(".controls.rover");
-    var context = canvas.getContext("2d");
-    var pointer = {
-      x: 0, // -1...1
-      y: 0, // -1...1
-    };
-    var previous = {
-      x: 0, // -1...1
-      y: 0, // -1...1
-    };
-    var axis = {
-      x: 0, // -1...1
-      y: 0, // -1...1
-    };
-    var deadZone = {
-      x: 0,
-      y: 0,
-    };
-    var controls = {
-      camera: document.querySelector(".controls.camera"),
-      rover: document.querySelector(".controls.rover"),
-    };
-
-    // var keyboard = {
-    //   active: null,
-    //   commands: {
-    //     rover: {
-    //       // // w
-    //       // 87: "speed",
-    //       // // x
-    //       // 88: "speed",
-    //       // arrow left
-    //       37: "left",
-    //       // arrow up
-    //       38: "fwd",
-    //       // arrow right
-    //       39: "right",
-    //       // arrow down
-    //       40: "rev",
-    //       // space
-    //       32: "stop",
-    //     },
-    //     camera: {
-    //       // arrow left
-    //       37: "left",
-    //       // arrow up
-    //       38: "up",
-    //       // arrow right
-    //       39: "right",
-    //       // arrow down
-    //       40: "down",
-    //       // space
-    //       32: "center",
-    //     },
-    //   },
-    // };
-
-    var deactivatables = ["fwd", "rev", "left", "right", "up", "down"];
-
 
     function transmit(data) {
-      socket.emit("remote-control", data);
+      console.log(`${data.component}: <${data.axis.x} ${data.axis.y}>`);
+      if (socket.connected) {
+        socket.emit("remote-control", data);
+      }
     }
 
-    rover.transmit = function() {
-      var now = Date.now();
-      var component = "rover";
-      var canTransmit = false;
-      var roundAxis = {};
+    function ThumbStick(touch, icon) {
+      var component = touch.id;
+      var toggler = document.getElementById("toggler");
+      var rover = document.querySelector(".controls.rover");
+      var context = touch.getContext("2d");
 
-      // Throttle drive control transmission down to 20Hz
-      // if (pointer !== null && now - 50 >= last) {
-      if (pointer !== null) {
-        // last = now;
+      var inVerticalLock = true;
+      var inHorizontalLock = true;
+      var pointer = {
+        x: 0, // -1...1
+        y: 0, // -1...1
+      };
+      var previous = {
+        x: 0, // -1...1
+        y: 0, // -1...1
+      };
+      var axis = {
+        x: 0, // -1...1
+        y: 0, // -1...1
+      };
+      var deadZone = {
+        x: 0,
+        y: 0,
+      };
 
-        if (Math.abs(axis.x) < 10 && Math.abs(axis.y) < 10) {
-          transmit({ component, axis: deadZone });
-        } else {
-          if (axis.x !== previous.x || axis.y !== previous.y) {
-            if (axis.x >= (previous.x + 10) ||
-                axis.x <= (previous.x - 10)) {
-              canTransmit = true;
-            }
+      this.transmit = function() {
+        var now = Date.now();
+        var canTransmit = false;
+        var roundAxis = {};
 
-            if (axis.y >= (previous.y + 10) ||
-                axis.y <= (previous.y - 10)) {
-              canTransmit = true;
-            }
+        // Throttle drive control transmission down to 20Hz
+        if (pointer !== null) {
+          if (Math.abs(axis.x) < 10 && Math.abs(axis.y) < 10) {
+            transmit({ component, axis: deadZone });
+          } else {
+            if (axis.x !== previous.x || axis.y !== previous.y) {
+              if (axis.x >= (previous.x + 10) ||
+                  axis.x <= (previous.x - 10)) {
+                canTransmit = true;
+              }
 
-            if (canTransmit) {
-              Object.assign(previous, axis, roundAxis);
+              if (axis.y >= (previous.y + 10) ||
+                  axis.y <= (previous.y - 10)) {
+                canTransmit = true;
+              }
 
-              roundAxis.x = Math.round(axis.x / 10) * 10;
-              roundAxis.y = Math.round(axis.y / 10) * 10;
+              if (canTransmit) {
+                Object.assign(previous, axis, roundAxis);
 
-              transmit({ component, axis: roundAxis });
+                roundAxis.x = Math.round(axis.x / 10) * 10;
+                roundAxis.y = Math.round(axis.y / 10) * 10;
+
+                // Last filter checks for lock paths
+                if (inVerticalLock) {
+                  roundAxis.x = 0;
+                }
+
+                // else {
+                //   // Slow down the turns...
+                //   // This might need a bit of tweaking
+                //   roundAxis.x -= 20;
+                // }
+
+                if (inHorizontalLock) {
+                  roundAxis.y = 0;
+                }
+
+                // else {
+                //   // Slow down the turns...
+                //   // This might need a bit of tweaking
+                //   roundAxis.y -= 20;
+                // }
+
+                transmit({ component, axis: roundAxis });
+              }
             }
           }
         }
+      };
+
+
+      touch.addEventListener("pointermove", (event) => {
+        onPointerMove(event, this.transmit);
+      });
+      // touch.addEventListener("pointerup", function() {
+      //   rover.transmit({ component, axis: deadZone });
+      // });
+
+      touch.addEventListener("pointerdown", onPointerDown);
+      touch.addEventListener("pointerup", onPointerUp);
+      touch.addEventListener("pointercancel", onPointerUp);
+      touch.addEventListener("pointerleave", onPointerUp);
+
+      window.onorientationchange = resizeCanvas;
+      window.onresize = resizeCanvas;
+
+
+      function resizeCanvas() {
+        touch.width = touch.parentElement.clientWidth;
+        touch.height = touch.parentElement.clientHeight;
+        window.scrollTo(0, 0);
       }
-    };
 
-    // var rValids = Object.keys(keyboard.commands.rover);
-    // var cValids = Object.keys(keyboard.commands.camera);
-    // var valids = rValids.concat(cValids);
+      function draw() {
+        var cW = touch.width;
+        var cH = touch.height;
+        var cX = cW / 2;
+        var cY = cH / 2;
+        var cR = cX / 3;
 
-    // document.body.onkeydown = function(event) {
-    //   var step = 10;
-    //   var component = "rover";
-    //   var elem, command;
+        var cPaddedWidth = cW - PAD40;
+        var cPaddedHeight = cH - PAD40;
 
-    //   if (event.shiftKey) {
-    //     component = "camera";
-    //   }
+        var x, y;
 
-    //   if (valids.indexOf(String(event.keyCode)) === -1) {
-    //     return;
-    //   }
+        context.clearRect(0, 0, cW, cH);
 
-    //   // Presently disabled
-    //   if (event.keyCode === 87 || event.keyCode === 88) {
-    //     throttle.value = throttle.valueAsNumber + (event.keyCode === 87 ? step : step * -1);
-    //   } else {
-    //     if (event.repeat) {
+        // Triangles
+        context.beginPath();
+        context.strokeStyle = "black";
+        context.fillStyle = "black";
+        context.lineWidth = 1;
 
-    //       // Move the left side joystick around...
-    //       //
-    //       // None of this crap actually works.
+        // TOP
+        context.moveTo(cX - PAD40, PAD60);
+        context.lineTo(cX + PAD40, PAD60);
+        context.lineTo(cX, PAD20);
+        context.stroke();
 
-    //       // if (pointer === null) {
-    //       //   pointer = Object.assign({}, deadZone);
-    //       // }
-    //       // // 37 left
-    //       // // 38 fwd
-    //       // // 39 right
-    //       // // 40 rev
-    //       // if (event.keyCode === 37) {
-    //       //   pointer.x--;
-    //       // }
+        // RIGHT
+        context.moveTo(cW - PAD20, cY);
+        context.lineTo(cW - PAD60, cY - PAD40);
+        context.lineTo(cW - PAD60, cY + PAD40);
 
-    //       // if (event.keyCode === 38) {
-    //       //   pointer.y++;
-    //       // }
+        // BOTTOM
+        context.moveTo(cX - PAD40, cH - PAD60);
+        context.lineTo(cX + PAD40, cH - PAD60);
+        context.lineTo(cX, cH - PAD20);
 
-    //       // if (event.keyCode === 39) {
-    //       //   pointer.x++;
-    //       // }
+        // LEFT
+        context.moveTo(PAD20, cY);
+        context.lineTo(PAD60, cY - PAD40);
+        context.lineTo(PAD60, cY + PAD40);
 
-    //       // if (event.keyCode === 40) {
-    //       //   pointer.y--;
-    //       // }
+        context.fill();
+        context.closePath();
 
-    //       // if (Math.abs(pointer.y) >= 100) {
-    //       //   console.log("abs y");
-    //       //   pointer.y = 100;
-    //       // }
 
-    //       // if (Math.abs(pointer.x) >= 100) {
-    //       //   pointer.x = 100;
-    //       // }
+        // Determine vertical and horizontal
+        // virtual stick "Lock Zones"
 
-    //       // console.log(pointer);
-    //       // console.log("move axis");
-    //       return;
-    //     }
-    //   }
+        // inVerticalLock
+        context.beginPath();
+        context.strokeStyle = "rgba(0,0,0,0)";
+        context.lineWidth = 1;
 
-    //   // console.log(axis);
-    //   // command = keyboard.commands[component][event.keyCode];
-    //   // elem = document.querySelector(`[data-component="${component}"][data-command="${command}"]`);
+        // TOP
+        context.moveTo(cX + PAD40, 0);
+        context.lineTo(cX + PAD20, cY);
+        context.lineTo(cX - PAD20, cY);
+        context.lineTo(cX - PAD40, 0);
+        context.lineTo(cX + PAD40, 0);
 
-    //   // if (elem) {
-    //   //   elem.classList.add("active");
-    //   //   setTimeout(() => {
-    //   //     elem.classList.remove("active");
-    //   //   }, 50);
-    //   // }
-    // };
+        // BOTTOM
+        context.moveTo(cX - PAD40, cH);
+        context.lineTo(cX - PAD20, cY);
+        context.lineTo(cX + PAD20, cY);
+        context.lineTo(cX + PAD40, cH);
+        context.lineTo(cX - PAD40, cH);
 
-    // document.body.onkeyup = function(event) {
-    //   if (valids.indexOf(String(event.keyCode)) === -1) {
-    //     return;
-    //   }
+        context.closePath();
+        context.stroke();
 
-    //   Object.assign(axis, deadZone);
-
-    //   // transmit()
-    // };
-
-    Array.from(buttons).forEach(button => {
-      button.isDown = false;
-
-      button.addEventListener("pointerdown", event => {
-        var active = true;
-        var { command, component } = event.target.dataset;
-        transmit({ active, command, component });
-        button.isDown = true;
-      });
-
-      button.addEventListener("pointerup", event => {
-        var active = false;
-        var { command, component } = event.target.dataset;
-        if (deactivatables.indexOf(command) !== -1) {
-          transmit({ active, command, component });
-        }
-        button.isDown = false;
-      });
-    });
-
-    rover.addEventListener("pointermove", rover.transmit);
-    rover.addEventListener("pointerup", () => {
-      var component = "rover";
-      var axis = Object.assign({}, deadZone);
-      rover.transmit({ component, axis });
-    });
-
-    canvas.addEventListener("pointermove", onPointerMove);
-    canvas.addEventListener("pointerdown", onPointerDown);
-    canvas.addEventListener("pointerup", onPointerUp);
-    canvas.addEventListener("pointercancel", onPointerUp);
-    canvas.addEventListener("pointerleave", onPointerUp);
-
-    window.onorientationchange = resizeCanvas;
-    window.onresize = resizeCanvas;
-
-    function resizeCanvas() {
-      canvas.width = rover.clientWidth;
-      canvas.height = rover.clientHeight;
-      window.scrollTo(0, 0);
-    }
-
-    function draw() {
-      var x, y;
-
-      context.clearRect(0, 0, canvas.width, canvas.height);
-
-      context.beginPath();
-      context.strokeStyle = "SlateGray";
-      context.lineWidth = 1;
-
-      context.moveTo(150, 10);
-      context.lineTo(150, 310);
-      context.closePath();
-
-      context.moveTo(10, 160);
-      context.lineTo(290, 160);
-      context.closePath();
-      context.stroke();
-
-      context.beginPath();
-      context.strokeStyle = "deeppink";
-      context.fillStyle = "deeppink";
-      context.lineWidth = "6";
-
-      if (pointer) {
-        x = pointer.x;
-        y = pointer.y;
-
-        // Disallow moving out of the control box
-        if (x > canvas.width - MIN_GUTTER_WIDTH) {
-          x = canvas.width - MIN_GUTTER_WIDTH;
+        if (pointer && pointer.pointerId) {
+          inVerticalLock = context.isPointInPath(pointer.x, pointer.y);
+          if (inVerticalLock) {
+            pointer.x = cX;
+          }
         }
 
-        if (x < MIN_GUTTER_WIDTH) {
-          x = MIN_GUTTER_WIDTH;
-        }
+        // inHorizontalLock
+        context.beginPath();
+        // LEFT
+        context.moveTo(0, cY - PAD40);
+        context.lineTo(cX, cY - PAD20);
+        context.lineTo(cX, cY + PAD20);
+        context.lineTo(0, cY + PAD40);
+        context.lineTo(0, cY - PAD40);
 
-        if (y > canvas.height - MIN_GUTTER_WIDTH) {
-          y = canvas.height - MIN_GUTTER_WIDTH;
-        }
+        // RIGHT
+        context.moveTo(cW, cY + PAD40);
+        context.lineTo(cX, cY + PAD20);
+        context.lineTo(cX, cY - PAD20);
+        context.lineTo(cW, cY - PAD40);
+        context.lineTo(cW, cY + PAD40);
 
-        if (y < MIN_GUTTER_WIDTH) {
-          y = MIN_GUTTER_WIDTH;
-        }
+        context.closePath();
+        context.stroke();
 
-        if (pointer.x === 0 && pointer.y === 0) {
-          context.arc(150, 160, 60, 0, Math.PI * 2, true);
+        if (pointer && pointer.pointerId) {
+          inHorizontalLock = context.isPointInPath(pointer.x, pointer.y);
+          if (inHorizontalLock) {
+            pointer.y = cY;
+          }
+        }
+        // End Lock Zones
+
+
+        // Thumb Stick Background
+        context.beginPath();
+        context.strokeStyle = "black";
+        context.lineWidth = (cW / 10) / 2;
+        context.arc(cX, cY, cR, 0, Math.PI * 2, true);
+        context.fill();
+        context.stroke();
+        context.closePath();
+
+
+        // Thumb Stick
+        context.beginPath();
+        context.strokeStyle = "black";
+        context.fillStyle = "silver";
+        context.lineWidth = (cW / 10) / 2;
+
+        if (pointer && pointer.pointerId) {
+          x = pointer.x;
+          y = pointer.y;
+
+          // Disallow moving out of the control box
+          if (x > touch.width - PADDING) {
+            x = touch.width - PADDING;
+          }
+
+          if (x < PADDING) {
+            x = PADDING;
+          }
+
+          if (y > touch.height - PADDING) {
+            y = touch.height - PADDING;
+          }
+
+          if (y < PADDING) {
+            y = PADDING;
+          }
+
+          if (pointer.x === 0 && pointer.y === 0) {
+            context.arc(cX, cY, cR, 0, Math.PI * 2, true);
+          } else {
+            context.arc(x, y, cR, 0, Math.PI * 2, true);
+          }
+
         } else {
-          context.arc(x, y, 40, 0, Math.PI * 2, true);
+          context.arc(cX, cY, cR, 0, Math.PI * 2, true);
         }
 
-      } else {
-        context.arc(150, 160, 60, 0, Math.PI * 2, true);
+        context.stroke();
+        context.fill();
+
+        context.font = "50px sans-serif";
+        context.fillStyle = "black";
+
+        x = x || cX;
+        y = y || cY;
+
+        context.fillText(icon, x - PAD20, y + 15);
+
+        requestAnimationFrame(draw);
       }
 
-      context.fill();
 
+      function leftCompensation(event) {
+        var parent = event.target.parentElement;
+        var left = getComputedStyle(event.target.parentElement).left;
+
+        if (left === "auto") {
+          left = window.innerWidth - touch.width;
+        }
+
+        return event.clientX - parseInt(left, 10);
+      }
+
+      function onPointerDown(event) {
+        var x = leftCompensation(event);
+        var y = event.clientY - (window.innerHeight - touch.height);
+
+        if (event.pointerId) {
+          pointer = {
+            x: x,
+            y: y,
+            pointerType: event.pointerType,
+            pointerId: event.pointerId
+          };
+        }
+      }
+
+      function onPointerMove(event, next) {
+        var x = leftCompensation(event);
+        var y = event.clientY - (window.innerHeight - touch.height);
+
+        if (pointer && pointer.pointerId) {
+          // W - PADDING
+          // H - PADDING
+          axis.x = constrain(scale(x, PADDING, touch.width - PADDING, -MIN_MAX, MIN_MAX), -MIN_MAX, MIN_MAX);
+          axis.y = constrain(scale(y, PADDING, touch.height - PADDING, -MIN_MAX, MIN_MAX), -MIN_MAX, MIN_MAX);
+
+          axis.y *= -1;
+          pointer.x = x;
+          pointer.y = y;
+        } else {
+          axis = Object.assign({}, deadZone);
+        }
+
+        next();
+      }
+
+      function onPointerUp(event) {
+        pointer = null;
+
+        if (event.type !== "pointerleave") {
+          transmit({ component, axis: deadZone });
+        }
+      }
+
+      resizeCanvas();
       requestAnimationFrame(draw);
     }
 
-    function onPointerDown(event) {
-      var x = event.clientX;
-      var y = event.clientY - (window.innerHeight - canvas.height);
-
-      if (event.pointerId) {
-        pointer = {
-          x: x,
-          y: y,
-          pointerType: event.pointerType,
-          pointerId: event.pointerId
-        };
-      }
-    }
-
-    function onPointerMove(event) {
-      var x = event.clientX;
-      var y = event.clientY - (window.innerHeight - canvas.height);
-
-      if (pointer && event.pointerId) {
-        // W - MIN_GUTTER_WIDTH
-        // H - MIN_GUTTER_WIDTH
-        axis.x = constrain(scale(x, MIN_GUTTER_WIDTH, canvas.width - MIN_GUTTER_WIDTH, -MAX_SPEED, MAX_SPEED), -MAX_SPEED, MAX_SPEED);
-        axis.y = constrain(scale(y, MIN_GUTTER_WIDTH, canvas.height - MIN_GUTTER_WIDTH, -MAX_SPEED, MAX_SPEED), -MAX_SPEED, MAX_SPEED);
-
-        axis.y *= -1;
-        pointer.x = x;
-        pointer.y = y;
-      } else {
-        axis = Object.assign({}, deadZone);
-      }
-    }
-
-    function onPointerUp(event) {
-      var component = "rover";
-
-      pointer = null;
-
-      if (event.type !== "pointerleave") {
-        transmit({ component, axis: deadZone });
-      }
-    }
-
-    function fscale(value, fromLow, fromHigh, toLow, toHigh) {
-      return (value - fromLow) * (toHigh - toLow) /
-        (fromHigh - fromLow) + toLow;
-    }
-
     function scale(value, fromLow, fromHigh, toLow, toHigh) {
-      return fscale(value, fromLow, fromHigh, toLow, toHigh) | 0;
+      return ((value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow) | 0;
     }
 
     function constrain(value, lower, upper) {
       return Math.min(upper, Math.max(lower, value));
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      resizeCanvas();
-      requestAnimationFrame(draw);
+    document.addEventListener("DOMContentLoaded", function() {
+      var steering = document.getElementById("steering");
+      var camera = document.getElementById("camera");
+      var toggler = document.querySelector("#toggler button");
+
+      new ThumbStick(steering, "\uD83D\uDE97");
+      new ThumbStick(camera, "\uD83C\uDFA5");
+
+      toggler.addEventListener("click", function(event) {
+        var isLefty = steering.parentElement.classList.contains("left");
+        var isRighty = steering.parentElement.classList.contains("right");
+
+        if (isRighty) {
+          steering.parentElement.classList.add("left");
+          steering.parentElement.classList.remove("right");
+
+          camera.parentElement.classList.add("right");
+          camera.parentElement.classList.remove("left");
+        } else {
+          steering.parentElement.classList.add("right");
+          steering.parentElement.classList.remove("left");
+
+          camera.parentElement.classList.add("left");
+          camera.parentElement.classList.remove("right");
+        }
+      });
     });
   </script>
 </body>
