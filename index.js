@@ -8,7 +8,7 @@ const Socket = require("socket.io");
 
 // Internal/Application Dependencies
 const { Board, Fn } = require("johnny-five");
-// const Edison = require("edison-io");
+const Edison = require("edison-io");
 const Camera = require("./lib/camera");
 const Rover = require("./lib/rover");
 
@@ -32,9 +32,9 @@ const listen = new Promise(resolve => {
 });
 
 const board = new Board({
-  // sigint: false,
-  // repl: false,
-  // io: new Edison()
+  sigint: false,
+  repl: false,
+  io: new Edison()
 });
 
 board.on("ready", () => {
