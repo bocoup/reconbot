@@ -54,7 +54,7 @@ board.on("ready", () => {
     console.log("Reconbot: Connected");
 
     socket.on("remote-control", data => {
-      if (data.component === "rover") {
+      if (data.component === "steering") {
         rover.update(data.axis);
       }
 
