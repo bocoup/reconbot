@@ -19,7 +19,7 @@ echo "set hostname";
 echo 'auto lo
 iface lo inet loopback
 
-Set to auto so we can share our net connection with it
+# Set to auto so we can share our net connection with it
 auto usb0
 iface usb0 inet static
   address 192.168.42.1
