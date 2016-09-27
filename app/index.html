@@ -126,7 +126,7 @@
     var socket = io();
 
     function transmit(data) {
-      console.log(`${data.component}: <${data.axis.x} ${data.axis.y}>`);
+      // console.log(`${data.component}: <${data.axis.x} ${data.axis.y}>`);
       if (socket.connected) {
         socket.emit("remote-control", data);
       }
