@@ -11,7 +11,7 @@ COPY install-mjpg-streamer.sh ./
 RUN ./install-mjpg-streamer.sh
 ENV LD_LIBRARY_PATH /usr/local/lib/
 
-# Copies the package.json first for better cache on later pushes
+# Copies the package.json so it invalidates the npm install if it changes
 COPY package.json package.json
 
 # This install npm dependencies on the resin.io build server,

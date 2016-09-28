@@ -1,5 +1,7 @@
 # debug
 
+Are you using pin 7? Stop! It messes up the wifi
+
 At makerfaire we observed weird wifi issues that were not seen during development. The Wifi would cutout when we started our johnny-five server. The following steps would fix it.
 
 With a newly booted board running on battery power, and a serial console.

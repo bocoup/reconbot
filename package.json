@@ -25,6 +25,7 @@
     "edison-io": "latest",
     "express": "^4.13.4",
     "johnny-five": "latest",
+    "mdns-js": "^0.5.0",
     "socket.io": "^1.4.6"
   },
   "devDependencies": {}

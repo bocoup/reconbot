@@ -11,7 +11,7 @@ const { Board, Fn } = require("johnny-five");
 const Edison = require("edison-io");
 const Camera = require("./lib/camera");
 const Rover = require("./lib/rover");
-
+const mdns = require("./lib/mdns");
 
 // Application, Server and Socket
 const app = Express();
