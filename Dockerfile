@@ -1,8 +1,8 @@
 # one of these https://hub.docker.com/r/resin/edison-node/tags/
-FROM resin/edison-node:6.2-20160602
+FROM resin/edison-node:6
 
 # bump this for a full rebuild
-ENV version=2
+ENV version=1
 
 WORKDIR /usr/src/app
 
@@ -16,9 +16,7 @@ COPY package.json package.json
 
 # This install npm dependencies on the resin.io build server,
 # making sure to clean up the artifacts it creates in order to reduce the image size.
-# We install mraa manually as the edison-io package doesn't detect that it's safe to install to install it on the resin.io build servers
 RUN JOBS=MAX npm install --production --unsafe-perm && \
-  npm install mraa@0.9.4 && \
   npm cache clean && \
   rm -rf /tmp/*
 
