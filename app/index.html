@@ -226,11 +226,17 @@
         touch.parentNode.addEventListener("pointerup", function() {
           transmit({ component, axis: deadZone });
         });
+        touch.parentNode.addEventListener("pointercancel", function() {
+          transmit({ component, axis: deadZone });
+        });
+        touch.parentNode.addEventListener("pointerleave", function() {
+          transmit({ component, axis: deadZone });
+        });
       }
 
 
       touch.addEventListener("pointerdown", onPointerDown);
-      // touch.addEventListener("pointerup", onPointerUp);
+      touch.addEventListener("pointerup", onPointerUp);
       touch.addEventListener("pointercancel", onPointerUp);
       touch.addEventListener("pointerleave", onPointerUp);
 
