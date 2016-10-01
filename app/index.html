@@ -221,6 +221,14 @@
         transmit({ component, axis: deadZone });
       });
 
+      // EMERGENCY FIX?
+      if (touch.parentNode) {
+        touch.parentNode.addEventListener("pointerup", function() {
+          transmit({ component, axis: deadZone });
+        });
+      }
+
+
       touch.addEventListener("pointerdown", onPointerDown);
       // touch.addEventListener("pointerup", onPointerUp);
       touch.addEventListener("pointercancel", onPointerUp);
