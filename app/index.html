@@ -216,12 +216,13 @@
       touch.addEventListener("pointermove", (event) => {
         onPointerMove(event, this.transmit);
       });
-      // touch.addEventListener("pointerup", function() {
-      //   rover.transmit({ component, axis: deadZone });
-      // });
+
+      touch.addEventListener("pointerup", function() {
+        transmit({ component, axis: deadZone });
+      });
 
       touch.addEventListener("pointerdown", onPointerDown);
-      touch.addEventListener("pointerup", onPointerUp);
+      // touch.addEventListener("pointerup", onPointerUp);
       touch.addEventListener("pointercancel", onPointerUp);
       touch.addEventListener("pointerleave", onPointerUp);
 
