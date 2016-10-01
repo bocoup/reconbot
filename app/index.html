@@ -103,11 +103,11 @@
     <button>&#8644;</button>
   </div>
   <div class="controls rover right" touch-action="none">
-    <canvas id="steering"></canvas>
+    <canvas id="steering" touch-action="none"></canvas>
   </div>
 
   <div class="controls rover left" touch-action="none">
-    <canvas id="camera"></canvas>
+    <canvas id="camera" touch-action="none"></canvas>
   </div>
 
   <div class="container" id="video-stream">
@@ -218,27 +218,23 @@
       });
 
       touch.addEventListener("pointerup", function() {
-        transmit({ component, axis: deadZone });
+        transmit({ component, axis: { x: 0, y: 0 } });
       });
-
-      // EMERGENCY FIX?
-      if (touch.parentNode) {
-        touch.parentNode.addEventListener("pointerup", function() {
-          transmit({ component, axis: deadZone });
-        });
-        touch.parentNode.addEventListener("pointercancel", function() {
-          transmit({ component, axis: deadZone });
-        });
-        touch.parentNode.addEventListener("pointerleave", function() {
-          transmit({ component, axis: deadZone });
-        });
-      }
-
 
       touch.addEventListener("pointerdown", onPointerDown);
       touch.addEventListener("pointerup", onPointerUp);
       touch.addEventListener("pointercancel", onPointerUp);
       touch.addEventListener("pointerleave", onPointerUp);
+
+      touch.parentNode.addEventListener("pointerup", function() {
+        transmit({ component, axis: { x: 0, y: 0 } });
+      });
+      touch.parentNode.addEventListener("pointercancel", function() {
+        transmit({ component, axis: { x: 0, y: 0 } });
+      });
+      touch.parentNode.addEventListener("pointerleave", function() {
+        transmit({ component, axis: { x: 0, y: 0 } });
+      });
 
       window.onorientationchange = resizeCanvas;
       window.onresize = resizeCanvas;
