@@ -88,6 +88,7 @@
     }
 
     #press-and-drag-text {
+      z-index: 20;
       margin: auto;
       width: 100%;
     }
@@ -501,7 +502,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       var steering = document.getElementById("steering");
       var camera = document.getElementById("camera");
-      var toggler = document.querySelector("#toggler button");
+      // var toggler = document.querySelector("#toggler button");
 
       new ThumbStick(steering, "\uD83D\uDE97");
       new ThumbStick(camera, "\uD83C\uDFA5");
@@ -521,24 +522,30 @@
         });
       });
 
-      toggler.addEventListener("click", function(event) {
-        var isLefty = steering.parentElement.classList.contains("left");
-        var isRighty = steering.parentElement.classList.contains("right");
-
-        if (isRighty) {
-          steering.parentElement.classList.add("left");
-          steering.parentElement.classList.remove("right");
-
-          camera.parentElement.classList.add("right");
-          camera.parentElement.classList.remove("left");
-        } else {
-          steering.parentElement.classList.add("right");
-          steering.parentElement.classList.remove("left");
-
-          camera.parentElement.classList.add("left");
-          camera.parentElement.classList.remove("right");
-        }
+      document.body.addEventListener("pointercancel", () => {
+        console.log("body: pointercancel");
+        transmit({ component: "steering", axis: { x: 0, y: 0 } });
       });
+
+
+      // toggler.addEventListener("click", function(event) {
+      //   var isLefty = steering.parentElement.classList.contains("left");
+      //   var isRighty = steering.parentElement.classList.contains("right");
+
+      //   if (isRighty) {
+      //     steering.parentElement.classList.add("left");
+      //     steering.parentElement.classList.remove("right");
+
+      //     camera.parentElement.classList.add("right");
+      //     camera.parentElement.classList.remove("left");
+      //   } else {
+      //     steering.parentElement.classList.add("right");
+      //     steering.parentElement.classList.remove("left");
+
+      //     camera.parentElement.classList.add("left");
+      //     camera.parentElement.classList.remove("right");
+      //   }
+      // });
     });
   </script>
 </body>
