@@ -76,6 +76,22 @@
       right: 0;
     }
 
+    #press-and-drag {
+      text-align: center;
+      min-width: 100%;
+      width: 100%;
+      z-index: 20;
+      font-size: 2rem;
+      border: 0;
+      background: pink;
+      font-color: black;
+    }
+
+    #press-and-drag-text {
+      margin: auto;
+      width: 100%;
+    }
+
     #toggler {
       z-index: 20;
     }
@@ -99,9 +115,17 @@
   <script src="/pep.js"></script>
 </head>
 <body>
-  <div id="toggler">
+  <div id="press-and-drag">
+    <div id="press-and-drag-text">
+      Press And Drag The Icons To Steer and Control The Camera
+    </div>
+  </div>
+
+<!--   <div id="toggler">
     <button>&#8644;</button>
   </div>
+ -->
+
   <div class="controls rover right" touch-action="none">
     <canvas id="steering" touch-action="none"></canvas>
   </div>
@@ -124,9 +148,11 @@
 
     // Program setup
     var socket = io();
+    var toggler = document.getElementById("toggler");
+    var video = document.getElementById("video-stream");
 
     function transmit(data) {
-      // console.log(`${data.component}: <${data.axis.x} ${data.axis.y}>`);
+      console.log(`${data.component}: <${data.axis.x} ${data.axis.y}>`);
       if (socket.connected) {
         socket.emit("remote-control", data);
       }
@@ -134,9 +160,8 @@
 
     function ThumbStick(touch, icon) {
       var component = touch.id;
-      var toggler = document.getElementById("toggler");
-      var rover = document.querySelector(".controls.rover");
       var context = touch.getContext("2d");
+      var parent = touch.parentNode;
 
       var inVerticalLock = true;
       var inHorizontalLock = true;
@@ -217,24 +242,19 @@
         onPointerMove(event, this.transmit);
       });
 
-      touch.addEventListener("pointerup", function() {
-        transmit({ component, axis: { x: 0, y: 0 } });
-      });
+      // touch.addEventListener("pointerup", () => {
+      //   console.log("touch: pointerup");
+      //   transmit({ component, axis: { x: 0, y: 0 } });
+      // });
 
       touch.addEventListener("pointerdown", onPointerDown);
       touch.addEventListener("pointerup", onPointerUp);
       touch.addEventListener("pointercancel", onPointerUp);
       touch.addEventListener("pointerleave", onPointerUp);
 
-      touch.parentNode.addEventListener("pointerup", function() {
-        transmit({ component, axis: { x: 0, y: 0 } });
-      });
-      touch.parentNode.addEventListener("pointercancel", function() {
-        transmit({ component, axis: { x: 0, y: 0 } });
-      });
-      touch.parentNode.addEventListener("pointerleave", function() {
-        transmit({ component, axis: { x: 0, y: 0 } });
-      });
+      // parent.addEventListener("pointerup", onPointerUp);
+      // parent.addEventListener("pointercancel", onPointerUp);
+      // parent.addEventListener("pointerleave", onPointerUp);
 
       window.onorientationchange = resizeCanvas;
       window.onresize = resizeCanvas;
@@ -260,35 +280,35 @@
 
         context.clearRect(0, 0, cW, cH);
 
-        // Triangles
-        context.beginPath();
-        context.strokeStyle = "black";
-        context.fillStyle = "black";
-        context.lineWidth = 1;
+        // // Triangles
+        // context.beginPath();
+        // context.strokeStyle = "black";
+        // context.fillStyle = "black";
+        // context.lineWidth = 1;
 
-        // TOP
-        context.moveTo(cX - PAD40, PAD60);
-        context.lineTo(cX + PAD40, PAD60);
-        context.lineTo(cX, PAD20);
-        context.stroke();
+        // // TOP
+        // context.moveTo(cX - PAD40, PAD60);
+        // context.lineTo(cX + PAD40, PAD60);
+        // context.lineTo(cX, PAD20);
+        // context.stroke();
 
-        // RIGHT
-        context.moveTo(cW - PAD20, cY);
-        context.lineTo(cW - PAD60, cY - PAD40);
-        context.lineTo(cW - PAD60, cY + PAD40);
+        // // RIGHT
+        // context.moveTo(cW - PAD20, cY);
+        // context.lineTo(cW - PAD60, cY - PAD40);
+        // context.lineTo(cW - PAD60, cY + PAD40);
 
-        // BOTTOM
-        context.moveTo(cX - PAD40, cH - PAD60);
-        context.lineTo(cX + PAD40, cH - PAD60);
-        context.lineTo(cX, cH - PAD20);
+        // // BOTTOM
+        // context.moveTo(cX - PAD40, cH - PAD60);
+        // context.lineTo(cX + PAD40, cH - PAD60);
+        // context.lineTo(cX, cH - PAD20);
 
-        // LEFT
-        context.moveTo(PAD20, cY);
-        context.lineTo(PAD60, cY - PAD40);
-        context.lineTo(PAD60, cY + PAD40);
+        // // LEFT
+        // context.moveTo(PAD20, cY);
+        // context.lineTo(PAD60, cY - PAD40);
+        // context.lineTo(PAD60, cY + PAD40);
 
-        context.fill();
-        context.closePath();
+        // context.fill();
+        // context.closePath();
 
 
         // Determine vertical and horizontal
@@ -485,6 +505,21 @@
 
       new ThumbStick(steering, "\uD83D\uDE97");
       new ThumbStick(camera, "\uD83C\uDFA5");
+
+      video.addEventListener("pointermove", function() {
+        transmit({
+          component: "steering",
+          axis: {
+            x: 0, y: 0
+          }
+        });
+        transmit({
+          component: "camera",
+          axis: {
+            x: 0, y: 0
+          }
+        });
+      });
 
       toggler.addEventListener("click", function(event) {
         var isLefty = steering.parentElement.classList.contains("left");
